@@ -7,4 +7,6 @@ public interface AuthService {
     JwtAuthResponseDTO login(AuthRequestDTO authRequestDTO);
 
     JwtAuthResponseDTO register(AuthRequestDTO authRequestDTO);
+
+    String getUsernameForLoggedInUser();
 }
