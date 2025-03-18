@@ -16,5 +16,6 @@ public record IncidentReportResponseDTO(
         @NotNull StatusEnum status,
         @NotBlank LocalDateTime createdAt,
         @NotBlank LocalDateTime updatedAt,
-        @NotNull String username) {
+        @NotNull String reporterUsername,
+        String assignedUsername) {
 }
