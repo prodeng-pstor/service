@@ -1,9 +1,13 @@
 package ro.unibuc.hello.service.impl;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 import ro.unibuc.hello.dto.IncidentReportRequestDTO;
 import ro.unibuc.hello.dto.IncidentReportResponseDTO;
 import ro.unibuc.hello.entity.IncidentReportEntity;
+import ro.unibuc.hello.entity.security.UserEntity;
 import ro.unibuc.hello.exception.EntityNotFoundException;
 import ro.unibuc.hello.repository.IncidentReportsRepository;
 import ro.unibuc.hello.service.IncidentReportsService;
@@ -13,9 +17,12 @@ import java.util.List;
 @Service
 public class IncidentReportsServiceImpl implements IncidentReportsService {
     private final IncidentReportsRepository incidentReportsRepository;
+    private final UserDetailsService userDetailsService;
 
-    public IncidentReportsServiceImpl(IncidentReportsRepository incidentReportsRepository) {
+
+    public IncidentReportsServiceImpl(IncidentReportsRepository incidentReportsRepository, UserDetailsService userDetailsService) {
         this.incidentReportsRepository = incidentReportsRepository;
+        this.userDetailsService = userDetailsService;
     }
 
     @Override
@@ -27,12 +34,27 @@ public class IncidentReportsServiceImpl implements IncidentReportsService {
 
     @Override
     public IncidentReportResponseDTO getIncidentReportById(Long id) {
-        return makeDTO(incidentReportsRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Incident report couldn't be found.")));
+        return makeDTO(incidentReportsRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Incident report couldn't be found.")));
+    }
+
+    @Override
+    public List<IncidentReportResponseDTO> getUserIncidentReports() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserEntity userEntity = (UserEntity) userDetailsService.loadUserByUsername(authentication.getName());
+        return incidentReportsRepository.findByUser(userEntity).stream()
+                .map(this::makeDTO)
+                .toList();
     }
 
     @Override
     public IncidentReportResponseDTO createIncidentReport(IncidentReportRequestDTO incidentReport) {
-        return makeDTO(incidentReportsRepository.save(makeEntity(incidentReport)));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserEntity userEntity = (UserEntity) userDetailsService.loadUserByUsername(authentication.getName());
+        IncidentReportEntity incidentReportEntity = makeEntity(incidentReport);
+        incidentReportEntity.setUser(userEntity);
+        incidentReportsRepository.save(incidentReportEntity);
+        return makeDTO(incidentReportEntity);
     }
 
     @Override
@@ -61,7 +83,8 @@ public class IncidentReportsServiceImpl implements IncidentReportsService {
                 incidentReportEntity.getSeverity(),
                 incidentReportEntity.getStatus(),
                 incidentReportEntity.getCreatedAt(),
-                incidentReportEntity.getUpdatedAt());
+                incidentReportEntity.getUpdatedAt(),
+                incidentReportEntity.getUser().getUsername());
     }
 
     private IncidentReportEntity makeEntity(IncidentReportRequestDTO incidentReportRequestDTO) {

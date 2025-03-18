@@ -9,8 +9,9 @@ import java.util.List;
 
 public interface IncidentReportsService {
      List<IncidentReportResponseDTO> getAllIncidentReports();
-    IncidentReportResponseDTO getIncidentReportById(Long id);
-    IncidentReportResponseDTO createIncidentReport(IncidentReportRequestDTO incidentReport);
+     IncidentReportResponseDTO getIncidentReportById(Long id);
+     List<IncidentReportResponseDTO> getUserIncidentReports();
+     IncidentReportResponseDTO createIncidentReport(IncidentReportRequestDTO incidentReport);
      IncidentReportResponseDTO updateIncidentReport(Long id, IncidentReportRequestDTO incidentReport)
             throws EntityNotFoundException;
      void deleteIncidentReport(Long id) throws EntityNotFoundException;
