@@ -29,6 +29,11 @@ public class IncidentReportsController {
         return ResponseEntity.ok(incidentReportsService.getIncidentReportById(id));
     }
 
+    @GetMapping("/myincidents")
+    public ResponseEntity<List<IncidentReportResponseDTO>> getMyIncidentReports() throws EntityNotFoundException {
+        return ResponseEntity.ok(incidentReportsService.getUserIncidentReports());
+    }
+
     @PostMapping
     public ResponseEntity<IncidentReportResponseDTO> addIncidentReport(@Valid @RequestBody IncidentReportRequestDTO incidentReport){
         return ResponseEntity.ok(incidentReportsService.createIncidentReport(incidentReport));

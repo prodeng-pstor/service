@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import ro.unibuc.hello.entity.common.BaseEntity;
+import ro.unibuc.hello.entity.security.UserEntity;
 import ro.unibuc.hello.enums.SeverityEnum;
 import ro.unibuc.hello.enums.StatusEnum;
 
@@ -33,4 +34,8 @@ public class IncidentReportEntity extends BaseEntity {
   @Column(nullable = false)
   @Enumerated(EnumType.STRING)
   private SeverityEnum severity;
+
+  @ManyToOne
+  @JoinColumn(name = "user_id", nullable = false)
+  private UserEntity user;
 }
