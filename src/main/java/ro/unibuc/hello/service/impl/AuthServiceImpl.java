@@ -53,6 +53,12 @@ public class AuthServiceImpl implements AuthService {
         return new JwtAuthResponseDTO(jwtProviderService.generateToken(authentication));
     }
 
+    @Override
+    public String getUsernameForLoggedInUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return authentication.getName();
+    }
+
     private Authentication authenticate(String username, String password) {
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
         SecurityContextHolder.getContext().setAuthentication(authentication);
