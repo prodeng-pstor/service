@@ -36,6 +36,10 @@ public class IncidentReportEntity extends BaseEntity {
   private SeverityEnum severity;
 
   @ManyToOne
-  @JoinColumn(name = "user_id", nullable = false)
-  private UserEntity user;
+  @JoinColumn(name = "reporter_user_id", nullable = false)
+  private UserEntity incidentReporter;
+
+  @ManyToOne
+  @JoinColumn(name = "assigned_user_id")
+  private UserEntity assignedUser;
 }
