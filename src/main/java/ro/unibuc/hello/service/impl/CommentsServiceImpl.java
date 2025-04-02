@@ -1,12 +1,12 @@
 package ro.unibuc.hello.service.impl;
 
-import jakarta.persistence.EntityNotFoundException;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 import ro.unibuc.hello.dto.CommentEntryResponseDTO;
 import ro.unibuc.hello.entity.CommentEntity;
 import ro.unibuc.hello.entity.security.UserEntity;
 import ro.unibuc.hello.exception.AccessViolationException;
+import ro.unibuc.hello.exception.EntityNotFoundException;
 import ro.unibuc.hello.repository.CommentsRepository;
 import ro.unibuc.hello.repository.IncidentReportsRepository;
 import ro.unibuc.hello.service.AuthService;
@@ -31,6 +31,10 @@ public class CommentsServiceImpl implements CommentsService {
 
     @Override
     public List<CommentEntryResponseDTO> getCommentsByIncidentId(Long incidentId) {
+        if (!incidentReportsRepository.existsById(incidentId)) {
+            throw new EntityNotFoundException("Incident with id " + incidentId + " not found");
+        }
+
         return commentsRepository.findAllByIncidentId(incidentId).stream()
                 .map(this::mapToDTO)
                 .toList();
@@ -38,6 +42,10 @@ public class CommentsServiceImpl implements CommentsService {
 
     @Override
     public CommentEntryResponseDTO addCommentToIncident(Long incidentId, String content) {
+        if (!incidentReportsRepository.existsById(incidentId)) {
+            throw new EntityNotFoundException("Incident with id " + incidentId + " not found");
+        }
+
         CommentEntity commentEntity = CommentEntity.builder()
                 .author((UserEntity) userDetailsService.loadUserByUsername(authService.getUsernameForLoggedInUser()))
                 .incidentReport(incidentReportsRepository.findById(incidentId).orElseThrow(() -> new EntityNotFoundException("Incident not found")))
@@ -49,7 +57,7 @@ public class CommentsServiceImpl implements CommentsService {
 
     @Override
     public CommentEntryResponseDTO editComment(Long commentId, String newContent) {
-        CommentEntity commentEntity = commentsRepository.findById(commentId).orElseThrow();
+        CommentEntity commentEntity = commentsRepository.findById(commentId).orElseThrow(() -> new EntityNotFoundException("Comment not found"));
 
         if (!Objects.equals(commentEntity.getAuthor().getUsername(), authService.getUsernameForLoggedInUser())) {
             throw new AccessViolationException("You do not have permission to edit this comment");
@@ -61,7 +69,7 @@ public class CommentsServiceImpl implements CommentsService {
 
     @Override
     public void deleteComment(Long commentId) {
-        CommentEntity commentEntity = commentsRepository.findById(commentId).orElseThrow();
+        CommentEntity commentEntity = commentsRepository.findById(commentId).orElseThrow(() -> new EntityNotFoundException("Comment not found"));
         commentsRepository.delete(commentEntity);
     }
 
