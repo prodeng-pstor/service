@@ -8,6 +8,7 @@ pipeline {
     environment {
         DOCKER_PASSWORD = credentials("docker_password")
         GITHUB_TOKEN    = credentials("github_token")
+        GITHUB_ORG      = 'prodeng-pstor'
     }
 
     stages {
@@ -29,7 +30,7 @@ pipeline {
 
                 sh "docker build -t ${DOCKER_PASSWORD_USR}/hello-img:${MAJOR_VERSION}.\$((${MINOR_VERSION} + 1)).${PATCH_VERSION} ."
                 sh "git tag ${env.IMAGE_TAG}"
-                sh "git push https://${GITHUB_TOKEN}@github.com/${DOCKER_PASSWORD_USR}/service.git ${env.IMAGE_TAG}"
+                sh "git push https://${GITHUB_TOKEN}@github.com/${GITHUB_ORG}/service.git ${env.IMAGE_TAG}"
             }
         }
         stage('Run containers') {
