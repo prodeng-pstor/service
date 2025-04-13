@@ -15,7 +15,6 @@ pipeline {
         stage('Build & Test') {
             steps {
                 sh './gradlew clean build'
-                sh './gradlew testIT'
             }
         }
 
@@ -34,10 +33,17 @@ pipeline {
                 sh "git push https://${GITHUB_TOKEN}@github.com/${GITHUB_ORG}/service.git ${env.IMAGE_TAG}"
             }
         }
+
         stage('Run containers') {
             steps {
                 sh "IMAGE_TAG=${env.IMAGE_TAG} docker compose up -d hello mongo postgres"
             }
         }
+
+        stage('Integration test') {
+            steps {
+                sh './gradlew testIT'
+            }
+          }
     }
 }
