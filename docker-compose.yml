@@ -22,14 +22,14 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - /usr/bin/docker:/usr/bin/docker
       - ./Dockerfile:/Dockerfile
-      - /usr/libexec/docker/cli-plugins/docker-compose:/usr/libexec/docker/cli-plugins/docker-compose
+      - /usr/lib/docker/cli-plugins/docker-compose:/usr/lib/docker/cli-plugins/docker-compose
     profiles:
       - "hello-service"
     user: 0:0
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
-# MONGO DB SERVICES
+  # MONGO DB SERVICES
   mongo:
     image: mongo:6.0.20
     restart: always
@@ -54,7 +54,7 @@ services:
     profiles:
       - "mongo"
 
-# POSTGRES DB SERVICES
+  # POSTGRES DB SERVICES
   postgres:
     image: postgres:17-alpine
     ports:
@@ -75,7 +75,7 @@ services:
     profiles:
       - "postgres"
 
-# MONITORING SERVICES
+  # MONITORING SERVICES
   cadvisor: # container metric prometheus exporter
     image: gcr.io/cadvisor/cadvisor:v0.51.0
     container_name: cadvisor
@@ -157,7 +157,7 @@ services:
       driver: loki
       options:
         loki-url: "http://loki:3100/loki/api/v1/push"
-    
+
   wrk-injector-info-perf: # traffic injector (high)
     image: mtchavez/docker-wrk
     profiles:

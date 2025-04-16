@@ -34,11 +34,11 @@ pipeline {
             }
         }
 
-        stage('Run containers') {
-            steps {
-                sh "IMAGE_TAG=${env.IMAGE_TAG} docker compose up -d hello mongo postgres"
-            }
-        }
+        //stage('Run containers') {
+            //steps {
+                //sh "IMAGE_TAG=${env.IMAGE_TAG} docker compose up -d hello mongo postgres"
+            //}
+        //}
 
         stage('Integration test') {
             steps {
