@@ -1,5 +1,6 @@
 package ro.unibuc.hello.service.impl;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 import ro.unibuc.hello.dto.CommentEntryResponseDTO;
@@ -21,16 +22,20 @@ public class CommentsServiceImpl implements CommentsService {
     private final UserDetailsService userDetailsService;
     private final AuthService authService;
     private final IncidentReportsRepository incidentReportsRepository;
+    private final MeterRegistry metricsRegistry;
 
-    public CommentsServiceImpl(CommentsRepository commentsRepository, UserDetailsService userDetailsService, AuthService authService, IncidentReportsRepository incidentReportsRepository) {
+    public CommentsServiceImpl(CommentsRepository commentsRepository, UserDetailsService userDetailsService, AuthService authService, IncidentReportsRepository incidentReportsRepository, MeterRegistry metricsRegistry) {
         this.commentsRepository = commentsRepository;
         this.userDetailsService = userDetailsService;
         this.authService = authService;
         this.incidentReportsRepository = incidentReportsRepository;
+        this.metricsRegistry = metricsRegistry;
     }
 
     @Override
     public List<CommentEntryResponseDTO> getCommentsByIncidentId(Long incidentId) {
+        metricsRegistry.counter("my_non_aop_metric", "endpoint", "getAll").increment();
+
         if (!incidentReportsRepository.existsById(incidentId)) {
             throw new EntityNotFoundException("Incident with id " + incidentId + " not found");
         }
@@ -42,6 +47,8 @@ public class CommentsServiceImpl implements CommentsService {
 
     @Override
     public CommentEntryResponseDTO addCommentToIncident(Long incidentId, String content) {
+        metricsRegistry.counter("my_non_aop_metric", "endpoint", "create").increment();
+
         if (!incidentReportsRepository.existsById(incidentId)) {
             throw new EntityNotFoundException("Incident with id " + incidentId + " not found");
         }
@@ -57,6 +64,8 @@ public class CommentsServiceImpl implements CommentsService {
 
     @Override
     public CommentEntryResponseDTO editComment(Long commentId, String newContent) {
+        metricsRegistry.counter("my_non_aop_metric", "endpoint", "update").increment();
+
         CommentEntity commentEntity = commentsRepository.findById(commentId).orElseThrow(() -> new EntityNotFoundException("Comment not found"));
 
         if (!Objects.equals(commentEntity.getAuthor().getUsername(), authService.getUsernameForLoggedInUser())) {
@@ -69,6 +78,8 @@ public class CommentsServiceImpl implements CommentsService {
 
     @Override
     public void deleteComment(Long commentId) {
+        metricsRegistry.counter("my_non_aop_metric", "endpoint", "delete").increment();
+
         CommentEntity commentEntity = commentsRepository.findById(commentId).orElseThrow(() -> new EntityNotFoundException("Comment not found"));
         commentsRepository.delete(commentEntity);
     }

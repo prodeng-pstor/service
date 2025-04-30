@@ -1,9 +1,12 @@
 package ro.unibuc.hello.service;
 
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import ro.unibuc.hello.dto.CommentEntryResponseDTO;
@@ -35,6 +38,9 @@ class CommentsServiceImplTest {
 
     @Mock
     private IncidentReportsRepository incidentReportsRepository;
+
+    @Mock
+    private MeterRegistry metricsRegistry;
 
     @InjectMocks
     private CommentsServiceImpl commentsService;
@@ -74,6 +80,10 @@ class CommentsServiceImplTest {
     }
     @Test
     void testGetCommentsByIncidentId_ShouldReturnComments_WhenIncidentExists() {
+        Counter counterMock = Mockito.mock(Counter.class);
+        when(metricsRegistry.counter(anyString(), anyString(), anyString())).thenReturn(counterMock);
+        doNothing().when(counterMock).increment();
+
         Long incidentId = 1L;
         when(incidentReportsRepository.existsById(incidentId)).thenReturn(true);
         when(commentsRepository.findAllByIncidentId(incidentId)).thenReturn(List.of(commentEntity));
@@ -87,6 +97,10 @@ class CommentsServiceImplTest {
 
     @Test
     void testGetCommentsByIncidentId_ShouldThrowEntityNotFound_WhenIncidentNotFound() {
+        Counter counterMock = Mockito.mock(Counter.class);
+        when(metricsRegistry.counter(anyString(), anyString(), anyString())).thenReturn(counterMock);
+        doNothing().when(counterMock).increment();
+
         Long incidentId = 1L;
         when(incidentReportsRepository.existsById(incidentId)).thenReturn(false);
 
@@ -95,6 +109,10 @@ class CommentsServiceImplTest {
 
     @Test
     void testAddCommentToIncident_ShouldAddComment_WhenIncidentExists() {
+        Counter counterMock = Mockito.mock(Counter.class);
+        when(metricsRegistry.counter(anyString(), anyString(), anyString())).thenReturn(counterMock);
+        doNothing().when(counterMock).increment();
+
         Long incidentId = 1L;
         String content = "New comment content.";
         when(incidentReportsRepository.existsById(incidentId)).thenReturn(true);
@@ -111,6 +129,10 @@ class CommentsServiceImplTest {
 
     @Test
     void testAddCommentToIncident_ShouldThrowEntityNotFound_WhenIncidentNotFound() {
+        Counter counterMock = Mockito.mock(Counter.class);
+        when(metricsRegistry.counter(anyString(), anyString(), anyString())).thenReturn(counterMock);
+        doNothing().when(counterMock).increment();
+
         Long incidentId = 1L;
         String content = "New comment content";
         when(incidentReportsRepository.existsById(incidentId)).thenReturn(false);
@@ -120,6 +142,10 @@ class CommentsServiceImplTest {
 
     @Test
     void testEditComment_ShouldEditComment_WhenCommentExistsAndUserHasPermission() {
+        Counter counterMock = Mockito.mock(Counter.class);
+        when(metricsRegistry.counter(anyString(), anyString(), anyString())).thenReturn(counterMock);
+        doNothing().when(counterMock).increment();
+
         Long commentId = 1L;
         String newContent = "Updated content";
         when(commentsRepository.findById(commentId)).thenReturn(Optional.of(commentEntity));
@@ -134,6 +160,10 @@ class CommentsServiceImplTest {
 
     @Test
     void testEditComment_ShouldThrowEntityNotFound_WhenCommentNotFound() {
+        Counter counterMock = Mockito.mock(Counter.class);
+        when(metricsRegistry.counter(anyString(), anyString(), anyString())).thenReturn(counterMock);
+        doNothing().when(counterMock).increment();
+
         Long commentId = 1L;
         String newContent = "Updated content";
         when(commentsRepository.findById(commentId)).thenReturn(Optional.empty());
@@ -143,6 +173,10 @@ class CommentsServiceImplTest {
 
     @Test
     void testEditComment_ShouldThrowAccessViolation_WhenUserHasNoPermission() {
+        Counter counterMock = Mockito.mock(Counter.class);
+        when(metricsRegistry.counter(anyString(), anyString(), anyString())).thenReturn(counterMock);
+        doNothing().when(counterMock).increment();
+
         Long commentId = 1L;
         String newContent = "Updated content";
 
@@ -163,6 +197,10 @@ class CommentsServiceImplTest {
 
     @Test
     void testDeleteComment_ShouldDeleteComment_WhenCommentExists() {
+        Counter counterMock = Mockito.mock(Counter.class);
+        when(metricsRegistry.counter(anyString(), anyString(), anyString())).thenReturn(counterMock);
+        doNothing().when(counterMock).increment();
+
         Long commentId = 1L;
         when(commentsRepository.findById(commentId)).thenReturn(Optional.of(commentEntity));
 
@@ -173,6 +211,10 @@ class CommentsServiceImplTest {
 
     @Test
     void testDeleteComment_ShouldThrowEntityNotFound_WhenCommentNotFound() {
+        Counter counterMock = Mockito.mock(Counter.class);
+        when(metricsRegistry.counter(anyString(), anyString(), anyString())).thenReturn(counterMock);
+        doNothing().when(counterMock).increment();
+
         Long commentId = 1L;
         when(commentsRepository.findById(commentId)).thenReturn(Optional.empty());
 
