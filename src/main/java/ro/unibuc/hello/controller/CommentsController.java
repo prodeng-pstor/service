@@ -26,7 +26,7 @@ public class CommentsController {
     }
 
     @PostMapping("/{incidentId}")
-    @Timed(value = "create.comments.time", description = "Time taken to create comment")
+    @Timed(value = "create.comments.time", description = "Time taken to create comment", histogram = true, percentiles = {0.5, 0.8, 0.95})
     @Counted(value = "create.comments.count", description = "Times comment was created")
     ResponseEntity<CommentEntryResponseDTO> createComment(@PathVariable Long incidentId, @RequestBody String content) {
         return ResponseEntity.ok(commentsService.addCommentToIncident(incidentId, content));

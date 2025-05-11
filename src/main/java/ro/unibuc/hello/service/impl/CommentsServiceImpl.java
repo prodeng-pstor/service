@@ -15,6 +15,7 @@ import ro.unibuc.hello.service.CommentsService;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicLong;
 
 @Service
 public class CommentsServiceImpl implements CommentsService {
@@ -23,6 +24,9 @@ public class CommentsServiceImpl implements CommentsService {
     private final AuthService authService;
     private final IncidentReportsRepository incidentReportsRepository;
     private final MeterRegistry metricsRegistry;
+    private final AtomicLong counterAvailablility = new AtomicLong();
+    private final AtomicLong counterQuality = new AtomicLong();
+
 
     public CommentsServiceImpl(CommentsRepository commentsRepository, UserDetailsService userDetailsService, AuthService authService, IncidentReportsRepository incidentReportsRepository, MeterRegistry metricsRegistry) {
         this.commentsRepository = commentsRepository;
@@ -34,20 +38,35 @@ public class CommentsServiceImpl implements CommentsService {
 
     @Override
     public List<CommentEntryResponseDTO> getCommentsByIncidentId(Long incidentId) {
-        metricsRegistry.counter("my_non_aop_metric", "endpoint", "getAll").increment();
+        try{
+            if (!incidentReportsRepository.existsById(incidentId)) {
+                throw new EntityNotFoundException("Incident with id " + incidentId + " not found");
+            }
 
-        if (!incidentReportsRepository.existsById(incidentId)) {
-            throw new EntityNotFoundException("Incident with id " + incidentId + " not found");
+            List<CommentEntryResponseDTO> result = commentsRepository.findAllByIncidentId(incidentId)
+                    .stream()
+                    .map(this::mapToDTO)
+                    .toList();
+            metricsRegistry.counter("availability.success", "endpoint", "getAllComments").increment(counterAvailablility.incrementAndGet());
+            return result;
+        } catch (EntityNotFoundException e) {
+            metricsRegistry.counter("availability.success", "endpoint", "getAllComments").increment(counterAvailablility.incrementAndGet());
+            throw e;
+        } catch (Exception e) {
+            metricsRegistry.counter("availability.failure", "endpoint", "getAllComments").increment(counterAvailablility.incrementAndGet());
+            throw e;
         }
 
-        return commentsRepository.findAllByIncidentId(incidentId).stream()
-                .map(this::mapToDTO)
-                .toList();
     }
 
     @Override
     public CommentEntryResponseDTO addCommentToIncident(Long incidentId, String content) {
         metricsRegistry.counter("my_non_aop_metric", "endpoint", "create").increment();
+
+        if (content == null || content.trim().isEmpty()) {
+            metricsRegistry.counter("quality.bad.input", "endpoint", "createComment").increment(counterQuality.incrementAndGet());
+            throw new IllegalArgumentException("Content is empty");
+        }
 
         if (!incidentReportsRepository.existsById(incidentId)) {
             throw new EntityNotFoundException("Incident with id " + incidentId + " not found");

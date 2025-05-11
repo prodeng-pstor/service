@@ -18,3 +18,30 @@ groups:
         annotations:
           summary: Increased info retrieval rate {{ $labels.value}} {{ $value }}
           description: "A container has disappeared\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+
+      - alert: WARNING-BadInput
+        expr: increase(quality_bad_input_total{endpoint="createComment"}[5m]) > 0
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: Bad requests comment creation
+          description: "Create comment endpoint has received bad inputs recently."
+
+      - alert: CRITICAL-AvailabilityDown
+        expr: increase(availability_failure_total{endpoint="getAllComments"}[5m]) > 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: GetAllComments endpoint failure
+          description: "GetAllComments endpoint has failed within the last 5 minutes"
+
+      - alert: WARNING-CommentCreation_TooSlow
+        expr: histogram_quantile(0.80, rate(create_comments_time_seconds_bucket[5m])) > 1
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Comment creation speed is unsatisfactory."
+          description: "80th percentile of create comment is over 1 second"

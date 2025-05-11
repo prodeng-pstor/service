@@ -78,11 +78,16 @@ class CommentsServiceImplTest {
                 commentEntity.getContent()
         );
     }
+
     @Test
     void testGetCommentsByIncidentId_ShouldReturnComments_WhenIncidentExists() {
-        Counter counterMock = Mockito.mock(Counter.class);
-        when(metricsRegistry.counter(anyString(), anyString(), anyString())).thenReturn(counterMock);
-        doNothing().when(counterMock).increment();
+        Counter successCounter = mock(Counter.class);
+        when(metricsRegistry.counter(eq("availability.success"), eq("endpoint"), eq("getAllComments"))).thenReturn(successCounter);
+        doNothing().when(successCounter).increment();
+
+        Counter failureCounter = mock(Counter.class);
+        when(metricsRegistry.counter(eq("availability.failure"), eq("endpoint"), eq("getAllComments"))).thenReturn(failureCounter);
+        doNothing().when(failureCounter).increment();
 
         Long incidentId = 1L;
         when(incidentReportsRepository.existsById(incidentId)).thenReturn(true);
@@ -97,9 +102,9 @@ class CommentsServiceImplTest {
 
     @Test
     void testGetCommentsByIncidentId_ShouldThrowEntityNotFound_WhenIncidentNotFound() {
-        Counter counterMock = Mockito.mock(Counter.class);
-        when(metricsRegistry.counter(anyString(), anyString(), anyString())).thenReturn(counterMock);
-        doNothing().when(counterMock).increment();
+        Counter successCounter = mock(Counter.class);
+        when(metricsRegistry.counter(eq("availability.success"), eq("endpoint"), eq("getAllComments"))).thenReturn(successCounter);
+        doNothing().when(successCounter).increment();
 
         Long incidentId = 1L;
         when(incidentReportsRepository.existsById(incidentId)).thenReturn(false);
@@ -109,6 +114,10 @@ class CommentsServiceImplTest {
 
     @Test
     void testAddCommentToIncident_ShouldAddComment_WhenIncidentExists() {
+        Counter qualityCounter = mock(Counter.class);
+        when(metricsRegistry.counter("quality.bad.input", "endpoint", "createComment")).thenReturn(qualityCounter);
+        doNothing().when(qualityCounter).increment();
+
         Counter counterMock = Mockito.mock(Counter.class);
         when(metricsRegistry.counter(anyString(), anyString(), anyString())).thenReturn(counterMock);
         doNothing().when(counterMock).increment();
@@ -129,6 +138,10 @@ class CommentsServiceImplTest {
 
     @Test
     void testAddCommentToIncident_ShouldThrowEntityNotFound_WhenIncidentNotFound() {
+        Counter qualityCounter = mock(Counter.class);
+        when(metricsRegistry.counter("quality.bad.input", "endpoint", "createComment")).thenReturn(qualityCounter);
+        doNothing().when(qualityCounter).increment();
+
         Counter counterMock = Mockito.mock(Counter.class);
         when(metricsRegistry.counter(anyString(), anyString(), anyString())).thenReturn(counterMock);
         doNothing().when(counterMock).increment();

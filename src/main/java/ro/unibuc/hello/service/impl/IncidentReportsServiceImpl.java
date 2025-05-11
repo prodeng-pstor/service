@@ -21,7 +21,6 @@ public class IncidentReportsServiceImpl implements IncidentReportsService {
     private final UserDetailsService userDetailsService;
     private final IncidentReportEntityToIncidentReportResponseDTOMapper incidentReportEntityToIncidentReportResponseDTOMapper;
 
-
     public IncidentReportsServiceImpl(IncidentReportsRepository incidentReportsRepository, UserDetailsService userDetailsService, IncidentReportEntityToIncidentReportResponseDTOMapper incidentReportEntityToIncidentReportResponseDTOMapper) {
         this.incidentReportsRepository = incidentReportsRepository;
         this.userDetailsService = userDetailsService;

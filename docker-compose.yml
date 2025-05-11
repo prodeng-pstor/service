@@ -1,6 +1,7 @@
 services:
   hello:
-    image: zahas/hello-img:${IMAGE_TAG}
+    image: hello-img
+    build: .
     ports:
       - 8080:8080
       # Port for debug
@@ -8,6 +9,7 @@ services:
     environment:
       ENVIRONMENT_NAME: local
       MONGODB_CONECTION_URL: mongodb://root:example@mongo:27017/
+      POSTGRES_CONNECTION_URL: jdbc:postgresql://postgres:5432/incidents
     restart: always
     profiles:
       - "hello-service"
@@ -22,12 +24,10 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - /usr/bin/docker:/usr/bin/docker
       - ./Dockerfile:/Dockerfile
-      - /usr/lib/docker/cli-plugins/docker-compose:/usr/lib/docker/cli-plugins/docker-compose
+      - /usr/libexec/docker/cli-plugins/docker-compose:/usr/libexec/docker/cli-plugins/docker-compose
     profiles:
       - "hello-service"
     user: 0:0
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
 
   # MONGO DB SERVICES
   mongo:
@@ -96,6 +96,14 @@ services:
     restart: always
     ports:
       - 9001:9001
+    profiles:
+      - "monitoring"
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter
+    ports:
+      - "9187:9187"
+    environment:
+      DATA_SOURCE_NAME: postgres://incidents:incidents@postgres:5432/incidents?sslmode=disable
     profiles:
       - "monitoring"
   loki:
